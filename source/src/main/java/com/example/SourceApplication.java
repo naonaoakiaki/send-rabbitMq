@@ -17,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @EnableBinding(Source.class)
 public class SourceApplication {
 
+    public static void main(String[] args) {
+        SpringApplication.run(SourceApplication.class, args);
+    }
+
     @Autowired
     Source source;
 
@@ -26,11 +30,19 @@ public class SourceApplication {
         source.output().send(MessageBuilder.withPayload(id).build());
     }
 
-    public static void main(String[] args) {
-        SpringApplication.run(SourceApplication.class, args);
+    @PostMapping("/dlq")
+    public void sendCustomQueue(@RequestBody CustomBody customBody) {
+        System.out.println("id=" + customBody.id + " queue=" + customBody.queue);
+        source.output().send(MessageBuilder.withPayload(customBody.id).build());
     }
 
     public static class Id {
         public Long id;
     }
+
+    public static class CustomBody {
+        public Long id;
+        public String queue;
+    }
+
 }
