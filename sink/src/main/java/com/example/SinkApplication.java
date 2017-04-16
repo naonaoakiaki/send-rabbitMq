@@ -1,5 +1,6 @@
 package com.example;
 
+import org.springframework.amqp.core.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -27,9 +28,13 @@ public class SinkApplication {
         public Long id;
     }
 
+//    @StreamListener(Sink.INPUT)
+//    public void print(Id id) {
+//        System.out.println("Received " + id.id);
+//    }
     @StreamListener(Sink.INPUT)
-    public void print(Id id) {
-        System.out.println("Received " + id.id);
+    public void print(Message message) {
+        System.out.println("Received " + message.getBody());
     }
 
 }

@@ -1,5 +1,7 @@
 package com.example;
 
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +13,8 @@ import org.springframework.integration.support.MessageBuilder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Map;
 
 @SpringBootApplication
 @RestController
@@ -24,6 +28,9 @@ public class SourceApplication {
     @Autowired
     Source source;
 
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
+
     @PostMapping
     public void sendMq(@RequestBody Id id) {
         System.out.println("id=" + id.id);
@@ -33,7 +40,12 @@ public class SourceApplication {
     @PostMapping("/dlq")
     public void sendCustomQueue(@RequestBody CustomBody customBody) {
         System.out.println("id=" + customBody.id + " queue=" + customBody.queue);
-        source.output().send(MessageBuilder.withPayload(customBody.id).build());
+        org.springframework.messaging.Message message = MessageBuilder.withPayload(customBody.id).build();
+        Id originalId = new Id();
+        originalId.id = customBody.id;
+//        this.rabbitTemplate.convertAndSend(customBody.queue, "id");
+
+        this.rabbitTemplate.send(customBody.queue, message);
     }
 
     public static class Id {
@@ -45,4 +57,6 @@ public class SourceApplication {
         public String queue;
     }
 
+
 }
+
